@@ -37,4 +37,6 @@ public class Constant {
 	
 	public static final String STUDENT_PROPERTIES = "student_properties.txt";
 	
+	public static final String UTF_8 = "UTF-8";
+	
 }

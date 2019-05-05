@@ -402,7 +402,7 @@ public class SearchFile {
 		}
 		//InputStream is = SearchFile.class.getClassLoader().getResourceAsStream("classwork/pz.txt");
 		FileInputStream is = new FileInputStream(file);
-		InputStreamReader isr = new InputStreamReader(is);
+		InputStreamReader isr = new InputStreamReader(is, Constant.UTF_8);
 		BufferedReader bfr = new BufferedReader(isr);
 		String buf = null;
 		while ((buf = bfr.readLine()) != null) {
