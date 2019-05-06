@@ -458,7 +458,9 @@ public class SearchFile {
 		newPath = newPath.replaceAll("/+", "/").replaceAll("\\+", "/");
 		File old = new File(olderPath);
 		File newf = new File(newPath);
+		System.out.println("正在处理文件夹：" + newPath );
 		boolean flag = old.renameTo(newf);
+		System.out.println("处理完成。");
 		return flag ? 0 : -1;
 	}
 

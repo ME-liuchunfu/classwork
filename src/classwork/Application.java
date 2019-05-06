@@ -78,6 +78,12 @@ public class Application {
 				}
 			}
 		}
+		System.out.println("处理完成！3秒后自动退出...");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

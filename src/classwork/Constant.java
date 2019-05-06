@@ -21,17 +21,17 @@ public class Constant {
 	
 	public static final String TYPE = "type";
 
-	public static final String BJ = "bj";
+	public static final String BJ = "[bj]";
 	
-	public static final String XH = "xh";
+	public static final String XH = "[xh]";
 	
-	public static final String XH2 = "xh2";
+	public static final String XH2 = "[xh2]";
 	
-	public static final String XH3 = "xh3";
+	public static final String XH3 = "[xh3]";
 	
-	public static final String XM = "xm";
+	public static final String XM = "[xm]";
 	
-	public static final String XK = "xk";
+	public static final String XK = "[xk]";
 	
 	public static final String PROPERTIES_NAME = "spring-type.properties";
 	
