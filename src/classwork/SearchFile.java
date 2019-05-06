@@ -43,6 +43,11 @@ public class SearchFile {
 	private List<String> zywj;
 	
 	/**
+	 * 提交作业的文件夹
+	 */
+	private List<String> zywjJia;
+	
+	/**
 	 * 已交作业
 	 */
 	private StringBuffer yijiaoZY;
@@ -99,6 +104,7 @@ public class SearchFile {
 	public SearchFile(String path){
 		list = new ArrayList<String>();
 		zywj = new ArrayList<String>();
+		zywjJia = new ArrayList<String>();
 		this.jiesuoML = path;
 		try{
 			initData();			
@@ -141,7 +147,6 @@ public class SearchFile {
 							if(code == 0){
 								xh.remove(j);
 								xm.remove(j);
-								break;
 							}
 						}
 					}
@@ -162,7 +167,7 @@ public class SearchFile {
 			FileInputStream fis = new FileInputStream(file);
 			Properties pt = new Properties();
 			pt.load(fis);
-			String type = pt.getProperty(Constant.TYPE).trim();
+			String type = new String(pt.getProperty(Constant.TYPE).trim().getBytes(Constant.UTF_8), Constant.UTF_8);
 			if(type != null && !"".equals(type)){
 				type = type.toLowerCase();
 				this.type = type;
@@ -288,6 +293,7 @@ public class SearchFile {
 		return 0;
 	}
 	
+	
 	/**
 	 * 保存记录到文件
 	 * @param filepath 文件路径：如F:/temp/abc
@@ -351,20 +357,27 @@ public class SearchFile {
 		}
 		File[] listFiles = file.listFiles();
 		for(File f : listFiles){
+			// 1、是文件
 			if(!f.isHidden() && f.isFile()){				
 				System.out.println(f.getAbsolutePath());
 				zywj.add(f.getAbsolutePath());
+			}
+			// 2、是文件夹
+			if(!f.isHidden() && f.isDirectory()){
+				zywjJia.add(f.getAbsolutePath());
 			}
 		}
 		return 0;
 	}
 
 	/**
+	 * 文件操作
 	 * 对比谁交了作业，谁没交作业
 	 * @param zywj 已交作业的文件
 	 * @param xm 学生名单
 	 */
-	public void invoke(List<String> zywj, List<String> xm){
+	public void invoke(){
+		this.initSplitMsg();
 		yijiaoZY = new StringBuffer();
 		weijiaoZY = new StringBuffer();
 		if(zywj != null && xm != null
@@ -384,10 +397,110 @@ public class SearchFile {
 					}
 				}
 			}
-			weijiaoZY.append("截至时间：" + DateUtils.getyyyy_MM_dd_HH_mm_ss() + "," + banji + xuekeM + "剩余未交作业名单：" + xm.toString());
+			weijiaoZY.append("截至时间：" + DateUtils.getyyyy_MM_dd_HH_mm_ss() + "," + banji + xuekeM + "剩余未交作业名单：\r\n" + xm.toString());
+		}
+	};
+	
+	/**
+	 * 文件夹操作
+	 * 对比谁交了作业，谁没交作业
+	 * @param zywj 已交作业的文件
+	 * @param xm 学生名单
+	 */
+	public void invokeByFolder(){
+		// 重新初始化学生信息，学号姓名
+		this.initSplitMsg();
+		yijiaoZY = new StringBuffer();
+		weijiaoZY = new StringBuffer();
+		if(zywjJia != null && xm != null
+				&& zywjJia.size() > 0 && xm.size() > 0){
+			String banji = this.banji != null ? this.banji : "";
+			String xuekeM = this.xuekeM != null ? this.xuekeM : "";
+			for (int i = 0; i < zywjJia.size(); i++) {
+				for(int j = 0; j < xm.size(); j++){
+					String zyming = zywjJia.get(i);
+					String xsming = xm.get(j);
+					String xhn = xh.get(j);
+					if(zyming.indexOf(xsming) != -1){
+						yijiaoZY.append(banji + xhn + "_" + xsming + "于时间：" + DateUtils.getyyyy_MM_dd_HH_mm_ss() + "提交过" + xuekeM + "作业\r\n");
+						xm.remove(j);
+						xh.remove(j);
+						break;
+					}
+				}
+			}
+			weijiaoZY.append("截至时间：" + DateUtils.getyyyy_MM_dd_HH_mm_ss() + "," + banji + xuekeM + "剩余未交作业名单：\r\n" + xm.toString());
 		}
 	};
 
+	/**
+	 * 重命名文件夹
+	 * @param olderPath 就文件夹
+	 * @param newPath 新文件夹父级目录
+	 * @param newName 新文件夹名
+	 * @return returnCode -1重命名失败了， 0成功
+	 */
+	private int rename2NewFolder(String olderPath, String newPath, String newName){
+		if(olderPath == null || "".equals(olderPath)){
+			System.out.println("原文件路径有误");
+			return -1;
+		}
+		if(newPath == null || "".equals(newPath)){
+			System.out.println("重命名的文件路径有误");
+			return -1;
+		}
+		if(newName == null || "".equals(newName)){
+			System.out.println("重命名的文件名有误");
+			return -1;
+		}
+		olderPath = olderPath.replaceAll("/+", "/").replaceAll("\\+", "/");
+		newPath = newPath + "/" + newName;
+		newPath = newPath.replaceAll("/+", "/").replaceAll("\\+", "/");
+		File old = new File(olderPath);
+		File newf = new File(newPath);
+		boolean flag = old.renameTo(newf);
+		return flag ? 0 : -1;
+	}
+
+	/**
+	 * 重命名文件夹，保存
+	 * @param outPath
+	 * @return
+	 */
+	public int save2ReNameFolder(String outPath){
+		if(outPath == null || "".equals(outPath)){
+			return -1;
+		}
+		File file = new File(outPath);
+		if(!file.exists()){
+			file.mkdirs();
+		}
+		//System.out.println(list.toString());
+		//System.out.println(zywj.toString());
+		// 重新格式化学生信息
+		this.initSplitMsg();
+		this.jiexiProperties();
+		if(zywjJia != null && zywjJia.size() > 0
+				&& list != null && list.size() > 0){
+			for(int i = 0; i < zywjJia.size(); i++){
+				for(int j = 0; j < xm.size(); j++){
+					String zywjm = zywjJia.get(i);
+					String xhn = xh.get(j);
+					String xmm = xm.get(j);
+					if(zywjm.indexOf(xmm) != -1){
+						String newFileName = this.getNewFileName(this.banji, xhn, xmm, this.xuekeM);
+						int code = this.rename2NewFolder(zywjm, outPath, newFileName);
+						if(code == 0){
+							xh.remove(j);
+							xm.remove(j);
+						}
+					}
+				}
+			}
+		}
+		return 0;
+	}
+	
 	/**
 	 * 初始化数据
 	 * @throws IOException
@@ -434,6 +547,14 @@ public class SearchFile {
 				xm.add(split[1].trim());
 			}
 		}
+	}
+	
+	/**
+	 * 提交作业文件夹
+	 * @return
+	 */
+	public List<String> getZywnJia(){
+		return this.zywjJia;
 	}
 	
 	/**

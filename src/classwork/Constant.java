@@ -39,4 +39,8 @@ public class Constant {
 	
 	public static final String UTF_8 = "UTF-8";
 	
+	public static final String SELECT_TYPE_1 = "1";
+	
+	public static final String SELECT_TYPE_2 = "2";
+	
 }
